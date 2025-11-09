@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotspot Map - SafeRoute AI</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet Heatmap -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    
+    <!-- Leaflet Polyline Decorator for arrows -->
+    <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='futuristic.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
+    
+    <!-- Clerk Authentication -->
+    <script
+      async
+      crossorigin="anonymous"
+      data-clerk-publishable-key="{{ clerk_publishable_key }}"
+      src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+      type="text/javascript"
+    ></script>
+</head>
+<body class="cyber-theme">
+    <!-- Animated Background -->
+    <div id="particles-js"></div>
+    <div class="city-grid"></div>
+    
+    <!-- Navigation -->
+    <nav class="cyber-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="ph ph-shield-checkered"></i>
+                <span class="brand-text">SafeRoute <span class="ai-badge">AI</span></span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('home_new') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('home_new') }}#features" class="nav-link">Features</a>
+                <a href="{{ url_for('hotspot_map') }}" class="nav-link active">Hotspot Map</a>
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('home_new') }}#api" class="nav-link">API</a>
+            </div>
+            <div class="nav-actions">
+                <!-- Clerk Auth Buttons -->
+                <div id="clerk-signed-out">
+                    <button class="btn-ghost" onclick="window.location.href='{{ url_for('signin') }}'">Sign In</button>
+                    <button class="btn-primary glow-effect" onclick="window.location.href='{{ url_for('signup') }}'">Get Started</button>
+                </div>
+                <div id="clerk-signed-in" style="display: none;">
+                    <div id="clerk-user-button"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Map Container -->
+    <div class="map-page-container">
+        <!-- Sidebar Controls -->
+        <div class="map-sidebar glass-effect">
+            <div class="sidebar-header">
+                <h2 class="gradient-text">Accident Hotspots</h2>
+                <p class="sidebar-subtitle">Real-time risk visualization</p>
+            </div>
+            
+            <!-- Layer Controls -->
+            <div class="layer-controls">
+                <h3 class="control-title">
+                    <i class="ph ph-layers"></i>
+                    Map Layers
+                </h3>
+                
+                <div class="control-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="heatmapLayer" checked>
+                        <span class="slider"></span>
+                        <span class="label-text">Heat Map</span>
+                    </label>
+                    
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="markersLayer" checked>
+                        <span class="slider"></span>
+                        <span class="label-text">Accident Markers</span>
+                    </label>
+                    
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="weatherLayer">
+                        <span class="slider"></span>
+                        <span class="label-text">Weather Conditions</span>
+                    </label>
+                    
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="trafficLayer">
+                        <span class="slider"></span>
+                        <span class="label-text">Traffic Flow</span>
+                    </label>
+                    
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="roadQualityLayer">
+                        <span class="slider"></span>
+                        <span class="label-text">Road Quality</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                <h3 class="control-title">
+                    <i class="ph ph-funnel"></i>
+                    Filters
+                </h3>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Time Range</label>
+                    <select class="cyber-select" id="timeFilter">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                        <option value="year">Last Year</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Weather Condition</label>
+                    <select class="cyber-select" id="weatherFilter">
+                        <option value="all">All Conditions</option>
+                        <option value="clear">Clear</option>
+                        <option value="cloudy">Cloudy</option>
+                        <option value="rain">Rain</option>
+                        <option value="snow">Snow</option>
+                        <option value="fog">Fog</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Risk Level</label>
+                    <select class="cyber-select" id="riskFilter">
+                        <option value="all">All Levels</option>
+                        <option value="high">High Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="low">Low Risk</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="map-legend">
+                <h3 class="control-title">
+                    <i class="ph ph-info"></i>
+                    Legend
+                </h3>
+                <div class="legend-items">
+                    <div class="legend-item-map">
+                        <div class="legend-color high-risk"></div>
+                        <span>High Risk (70-100)</span>
+                    </div>
+                    <div class="legend-item-map">
+                        <div class="legend-color medium-risk"></div>
+                        <span>Medium Risk (30-70)</span>
+                    </div>
+                    <div class="legend-item-map">
+                        <div class="legend-color low-risk"></div>
+                        <span>Low Risk (0-30)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="sidebar-stats">
+                <div class="stat-card">
+                    <i class="ph ph-warning-circle"></i>
+                    <div class="stat-info">
+                        <div class="stat-value" id="totalHotspots">--</div>
+                        <div class="stat-text">Active Hotspots</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="ph ph-chart-line"></i>
+                    <div class="stat-info">
+                        <div class="stat-value" id="avgRisk">--</div>
+                        <div class="stat-text">Avg Risk Score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Map View -->
+        <div class="map-main">
+            <div id="hotspotMap"></div>
+            
+            <!-- Map Overlay Info -->
+            <div class="map-info-panel glass-effect" id="infoPanel" style="display: none;">
+                <div class="info-header">
+                    <h3 id="infoPanelTitle">Location Details</h3>
+                    <button class="btn-close" onclick="closeInfoPanel()">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+                <div class="info-body">
+                    <div class="info-item">
+                        <i class="ph ph-map-pin"></i>
+                        <div>
+                            <div class="info-label">Coordinates</div>
+                            <div class="info-value" id="infoCoords">--</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="ph ph-shield-warning"></i>
+                        <div>
+                            <div class="info-label">Risk Score</div>
+                            <div class="info-value" id="infoRisk">--</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="ph ph-clock"></i>
+                        <div>
+                            <div class="info-label">Last Incident</div>
+                            <div class="info-value" id="infoTime">--</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="ph ph-cloud-rain"></i>
+                        <div>
+                            <div class="info-label">Weather</div>
+                            <div class="info-value" id="infoWeather">--</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="ph ph-car"></i>
+                        <div>
+                            <div class="info-label">Traffic Density</div>
+                            <div class="info-value" id="infoTraffic">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-footer">
+                    <button class="btn-primary glow-effect" onclick="navigateToLocation()">
+                        <i class="ph ph-navigation"></i>
+                        Get Directions
+                    </button>
+                </div>
+            </div>
+            
+            <!-- AI Alert -->
+            <div class="ai-alert glass-effect pulse-glow" id="aiAlert">
+                <i class="ph ph-lightning"></i>
+                <span id="aiAlertText">⚡ High accident probability detected in this region. Slow down & stay alert.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="map-search-box glass-effect">
+        <i class="ph ph-magnifying-glass"></i>
+        <input type="text" id="searchLocation" placeholder="Search location..." class="search-input">
+        <button class="btn-search" onclick="searchLocation()">
+            <i class="ph ph-arrow-right"></i>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="{{ url_for('static', filename='map.js') }}"></script>
+    <script src="{{ url_for('static', filename='futuristic.js') }}"></script>
+    
+    <!-- Clerk Authentication Handler -->
+    <script>
+        window.addEventListener('load', async function () {
+            if (window.Clerk) {
+                try {
+                    await Clerk.load();
+                    
+                    const signedOut = document.getElementById('clerk-signed-out');
+                    const signedIn = document.getElementById('clerk-signed-in');
+                    
+                    if (Clerk.user) {
+                        // User is signed in - show user button
+                        console.log('User authenticated:', Clerk.user);
+                        signedOut.style.display = 'none';
+                        signedIn.style.display = 'block';
+                        Clerk.mountUserButton(document.getElementById('clerk-user-button'), {
+                            afterSignOutUrl: "{{ url_for('signin') }}"
+                        });
+                    } else {
+                        // User is not signed in
+                        console.log('User not authenticated');
+                        signedOut.style.display = 'flex';
+                        signedIn.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Clerk initialization error:', error);
+                }
+            } else {
+                console.error('Clerk SDK not loaded');
+            }
+        });
+    </script>
+</body>
+</html>

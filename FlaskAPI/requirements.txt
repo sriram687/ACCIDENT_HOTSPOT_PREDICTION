@@ -1,19 +1,33 @@
-certifi==2020.4.5.2
-click==7.1.2
-Flask==1.1.2
-itsdangerous==1.1.0
-Jinja2==2.11.2
-joblib==0.15.1
-MarkupSafe==1.1.1
-mkl-fft==1.1.0
-mkl-random==1.1.1
-mkl-service==2.3.0
-numpy==1.18.1
-pandas==1.0.4
-python-dateutil==2.8.1
-pytz==2020.1
-scikit-learn==0.22.1
-scipy==1.4.1
-six==1.15.0
-Werkzeug==1.0.1
-wincertstore==0.2
+# Core Flask dependencies
+Flask==2.3.3
+Werkzeug==2.3.8
+Jinja2==3.1.4
+MarkupSafe==2.1.5
+itsdangerous==2.1.2
+click==8.1.7
+
+# Data processing and machine learning
+pandas==2.2.3
+numpy==2.1.3
+scikit-learn==1.5.2
+xgboost==2.1.1
+scipy==1.14.1
+joblib==1.3.2
+
+# Additional utilities
+python-dateutil==2.9.0.post0
+pytz==2024.1
+six==1.16.0
+certifi==2024.8.30
+requests==2.32.3
+
+# Development and production dependencies
+gunicorn==21.2.0
+python-dotenv==1.0.0
+
+# Optional: For enhanced logging and monitoring
+flask-cors==4.0.0
+
+# Authentication
+PyJWT==2.8.0
+cryptography==41.0.7

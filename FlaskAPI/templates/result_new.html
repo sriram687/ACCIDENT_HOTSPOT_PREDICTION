@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Assessment Result - SafeRoute AI</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='futuristic.css') }}">
+    
+    <style>
+        .result-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 2rem 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .result-container {
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .result-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+        
+        .result-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            animation: scaleIn 0.5s ease;
+        }
+        
+        .result-icon.safe {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--neon-green);
+            border: 3px solid var(--neon-green);
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+        }
+        
+        .result-icon.unsafe {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            border: 3px solid #EF4444;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .result-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+        
+        .result-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+        
+        .confidence-bar {
+            max-width: 400px;
+            margin: 0 auto 3rem;
+        }
+        
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .progress-track {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+            border-radius: 10px;
+            transition: width 1s ease;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        }
+        
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+            text-align: left;
+        }
+        
+        .detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .detail-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body class="cyber-theme">
+    <!-- Animated Background -->
+    <div id="particles-js"></div>
+    <div class="city-grid"></div>
+    
+    <!-- Navigation -->
+    <nav class="cyber-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="ph ph-shield-checkered"></i>
+                <span class="brand-text">SafeRoute <span class="ai-badge">AI</span></span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('home_new') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('home_new') }}#features" class="nav-link">Features</a>
+                <a href="{{ url_for('hotspot_map') }}" class="nav-link">Hotspot Map</a>
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Result Page -->
+    <div class="result-page">
+        <div class="result-container">
+            <div class="result-card">
+                <!-- Result Icon -->
+                <div class="result-icon {{ 'safe' if prediction == 0 else 'unsafe' }}">
+                    {% if prediction == 0 %}
+                        <i class="ph ph-shield-check"></i>
+                    {% else %}
+                        <i class="ph ph-shield-warning"></i>
+                    {% endif %}
+                </div>
+                
+                <!-- Result Title -->
+                <h1 class="result-title gradient-text">
+                    {% if prediction == 0 %}
+                        Route is Safe ✓
+                    {% else %}
+                        High Risk Detected ⚠
+                    {% endif %}
+                </h1>
+                
+                <p class="result-subtitle">
+                    {% if prediction == 0 %}
+                        Your route appears to have low accident risk. Drive safely!
+                    {% else %}
+                        Caution advised. Consider alternative routes or delay travel.
+                    {% endif %}
+                </p>
+                
+                <!-- Confidence Bar -->
+                <div class="confidence-bar">
+                    <div class="confidence-label">
+                        <span>Confidence Level</span>
+                        <span>{{ confidence }}%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: {{ confidence }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- Result Details -->
+                <div class="result-details">
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="ph ph-map-pin"></i>
+                            Location
+                        </div>
+                        <div class="detail-value">
+                            {{ location_name }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            {{ input_data.latitude }}, {{ input_data.longitude }}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="ph ph-thermometer"></i>
+                            Temperature
+                        </div>
+                        <div class="detail-value">
+                            {{ input_data.temp }}°F
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="ph ph-wind"></i>
+                            Wind Speed
+                        </div>
+                        <div class="detail-value">
+                            {{ input_data.windspeed }} mph
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="ph ph-eye"></i>
+                            Visibility
+                        </div>
+                        <div class="detail-value">
+                            {{ input_data.visibility }} mi
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="ph ph-cloud"></i>
+                            Weather
+                        </div>
+                        <div class="detail-value">
+                            {{ input_data.weatherkeyword if input_data.weatherkeyword != '0' else 'Clear' }}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="ph ph-road-horizon"></i>
+                            Road Feature
+                        </div>
+                        <div class="detail-value">
+                            {{ input_data.roadfeature if input_data.roadfeature != '0' else 'None' }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Recommendations -->
+                <div class="ai-suggestions glass-effect" style="text-align: left; margin: 2rem 0;">
+                    <div class="suggestions-header">
+                        <i class="ph ph-lightbulb"></i>
+                        <h4>AI Recommendations</h4>
+                    </div>
+                    <div class="suggestions-list">
+                        {% if prediction == 0 %}
+                            <div class="suggestion-item">
+                                <i class="ph ph-check-circle"></i>
+                                <span>Maintain safe following distance</span>
+                            </div>
+                            <div class="suggestion-item">
+                                <i class="ph ph-check-circle"></i>
+                                <span>Stay alert for sudden changes in traffic</span>
+                            </div>
+                            <div class="suggestion-item">
+                                <i class="ph ph-check-circle"></i>
+                                <span>Current conditions are favorable for driving</span>
+                            </div>
+                        {% else %}
+                            <div class="suggestion-item">
+                                <i class="ph ph-warning"></i>
+                                <span>Consider alternative routes or delaying travel</span>
+                            </div>
+                            <div class="suggestion-item">
+                                <i class="ph ph-warning"></i>
+                                <span>Reduce speed by 15-20 mph below limit</span>
+                            </div>
+                            <div class="suggestion-item">
+                                <i class="ph ph-warning"></i>
+                                <span>Increase following distance to 4-5 seconds</span>
+                            </div>
+                            <div class="suggestion-item">
+                                <i class="ph ph-warning"></i>
+                                <span>Avoid distractions and stay fully alert</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="result-actions">
+                    <button class="btn-primary glow-effect" onclick="window.location.href='{{ url_for('home_new') }}#risk-scan'">
+                        <i class="ph ph-arrow-clockwise"></i>
+                        New Assessment
+                    </button>
+                    <button class="btn-secondary glass-effect" onclick="viewOnMap()">
+                        <i class="ph ph-map-trifold"></i>
+                        View on Map
+                    </button>
+                    <button class="btn-ghost" onclick="window.print()">
+                        <i class="ph ph-printer"></i>
+                        Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="{{ url_for('static', filename='futuristic.js') }}"></script>
+    
+    <script>
+        function viewOnMap() {
+            // Store route data in sessionStorage
+            const routeData = {
+                source: {
+                    lat: {{ latitude }},
+                    lng: {{ longitude }},
+                    name: "{{ location_name }}"
+                },
+                destination: {
+                    lat: {{ dest_latitude if dest_latitude else 'null' }},
+                    lng: {{ dest_longitude if dest_longitude else 'null' }},
+                    name: "{{ dest_location_name if dest_location_name else '' }}"
+                },
+                risk_level: "{{ risk_level }}",
+                confidence: {{ confidence }},
+                prediction: {{ prediction }}
+            };
+            sessionStorage.setItem('routeData', JSON.stringify(routeData));
+            
+            // Navigate to map page
+            window.location.href = "{{ url_for('hotspot_map') }}";
+        }
+    </script>
+</body>
+</html>

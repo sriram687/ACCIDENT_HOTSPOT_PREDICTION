@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeRoute AI - Drive Smarter. Drive Safer.</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/lucide-static@latest/font/lucide.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Lottie -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='futuristic.css') }}">
+    
+    <!-- Particles.js for animated background -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    
+    <!-- Clerk Authentication -->
+    <script
+      async
+      crossorigin="anonymous"
+      data-clerk-publishable-key="{{ clerk_publishable_key }}"
+      src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+      type="text/javascript"
+    ></script>
+</head>
+<body class="cyber-theme">
+    <!-- Animated Background -->
+    <div id="particles-js"></div>
+    <div class="city-grid"></div>
+    
+    <!-- Navigation -->
+    <nav class="cyber-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="ph ph-shield-checkered"></i>
+                <span class="brand-text">SafeRoute <span class="ai-badge">AI</span></span>
+            </div>
+            <div class="nav-links">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="{{ url_for('hotspot_map') }}" class="nav-link">Hotspot Map</a>
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="#api" class="nav-link">API</a>
+            </div>
+            <div class="nav-actions">
+                <!-- Clerk Auth Buttons -->
+                <div id="clerk-signed-out">
+                    <button class="btn-ghost" onclick="window.location.href='{{ url_for('signin') }}'">Sign In</button>
+                    <button class="btn-primary glow-effect" onclick="window.location.href='{{ url_for('signup') }}'">Get Started</button>
+                </div>
+                <div id="clerk-signed-in" style="display: none;">
+                    <div id="clerk-user-button"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-container">
+            <!-- Animated Map Background -->
+            <div class="animated-map">
+                <div id="map-lottie"></div>
+                <div class="map-overlay"></div>
+            </div>
+            
+            <!-- Car Path Animation -->
+            <div class="car-path-container">
+                <div id="car-animation"></div>
+            </div>
+            
+            <!-- Hero Content -->
+            <div class="hero-content">
+                <div class="ai-badge-pill pulse-glow">
+                    <i class="ph ph-lightning"></i>
+                    <span>Powered by Advanced Machine Learning</span>
+                </div>
+                
+                <h1 class="hero-title gradient-text">
+                    Drive Smarter.<br>
+                    Drive Safer.
+                </h1>
+                
+                <p class="hero-subtitle">
+                    AI predicts accident hotspots before they happen.<br>
+                    Real-time analysis. 92% accuracy. Smart city ready.
+                </p>
+                
+                <div class="hero-cta">
+                    <button class="btn-hero btn-primary glow-effect" onclick="scrollToRiskScan()">
+                        <i class="ph ph-scan"></i>
+                        Start Risk Scan
+                    </button>
+                    <button class="btn-hero btn-secondary glass-effect" onclick="window.location.href='{{ url_for("hotspot_map") }}'">
+                        <i class="ph ph-map-trifold"></i>
+                        Explore Hotspot Map
+                    </button>
+                </div>
+                
+                <!-- Stats -->
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number gradient-text">92%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number gradient-text">204K+</div>
+                        <div class="stat-label">Data Points</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number gradient-text">24/7</div>
+                        <div class="stat-label">Real-Time</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Floating AI Assistant -->
+            <div class="ai-assistant pulse-glow">
+                <i class="ph ph-robot"></i>
+                <div class="ai-tooltip">
+                    <span id="ai-hint">⚡ Analyzing traffic patterns...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <div class="scroll-arrow"></div>
+            <span>Scroll to explore</span>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">CAPABILITIES</span>
+                <h2 class="section-title gradient-text">Intelligent Safety Features</h2>
+                <p class="section-subtitle">Powered by XGBoost ML and real-time data integration</p>
+            </div>
+            
+            <div class="features-grid">
+                <!-- Feature Card 1 -->
+                <div class="feature-card glass-effect hover-glow">
+                    <div class="feature-icon purple-glow">
+                        <i class="ph ph-brain"></i>
+                    </div>
+                    <h3 class="feature-title">Predict Accident Risk</h3>
+                    <p class="feature-description">
+                        AI analyzes 24+ factors including location, weather, traffic, and road conditions with 92% accuracy.
+                    </p>
+                    <div class="feature-badge">ML Powered</div>
+                </div>
+                
+                <!-- Feature Card 2 -->
+                <div class="feature-card glass-effect hover-glow">
+                    <div class="feature-icon blue-glow">
+                        <i class="ph ph-cloud-rain"></i>
+                    </div>
+                    <h3 class="feature-title">Real-Time Weather & Traffic</h3>
+                    <p class="feature-description">
+                        Live weather conditions, visibility, wind speed, and traffic density integrated seamlessly.
+                    </p>
+                    <div class="feature-badge">Live Data</div>
+                </div>
+                
+                <!-- Feature Card 3 -->
+                <div class="feature-card glass-effect hover-glow">
+                    <div class="feature-icon cyan-glow">
+                        <i class="ph ph-map-pin-line"></i>
+                    </div>
+                    <h3 class="feature-title">Hotspot Mapping</h3>
+                    <p class="feature-description">
+                        Interactive heat maps show accident-prone zones with cluster analysis and proximity warnings.
+                    </p>
+                    <div class="feature-badge">Geographic AI</div>
+                </div>
+                
+                <!-- Feature Card 4 -->
+                <div class="feature-card glass-effect hover-glow">
+                    <div class="feature-icon orange-glow">
+                        <i class="ph ph-bell-ringing"></i>
+                    </div>
+                    <h3 class="feature-title">Safety Notifications</h3>
+                    <p class="feature-description">
+                        Instant alerts for drivers and authorities when entering high-risk zones or dangerous conditions.
+                    </p>
+                    <div class="feature-badge">Smart Alerts</div>
+                </div>
+                
+                <!-- Feature Card 5 -->
+                <div class="feature-card glass-effect hover-glow">
+                    <div class="feature-icon green-glow">
+                        <i class="ph ph-wifi-slash"></i>
+                    </div>
+                    <h3 class="feature-title">Works Offline</h3>
+                    <p class="feature-description">
+                        Progressive Web App (PWA) mode enables offline predictions with cached model and data.
+                    </p>
+                    <div class="feature-badge">PWA Ready</div>
+                </div>
+                
+                <!-- Feature Card 6 -->
+                <div class="feature-card glass-effect hover-glow">
+                    <div class="feature-icon pink-glow">
+                        <i class="ph ph-code"></i>
+                    </div>
+                    <h3 class="feature-title">API Access</h3>
+                    <p class="feature-description">
+                        RESTful API for government, navigation apps, and smart city platforms. Easy integration.
+                    </p>
+                    <div class="feature-badge">Developer Ready</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risk Assessment Section -->
+    <section id="risk-scan" class="risk-section">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">TRY IT NOW</span>
+                <h2 class="section-title gradient-text">Check Your Route Safety</h2>
+                <p class="section-subtitle">Enter your route details for instant AI-powered risk analysis</p>
+            </div>
+            
+            <div class="risk-container">
+                <!-- Risk Form -->
+                <div class="risk-form glass-effect">
+                    <form id="riskForm" action="{{ url_for('predict') }}" method="POST">
+                        
+                        <!-- Location Search -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-magnifying-glass"></i>
+                                Search Location
+                            </label>
+                            <div class="search-location-wrapper">
+                                <input type="text" id="locationSearch" class="cyber-input" placeholder="Enter city or address...">
+                                <button type="button" id="searchBtn" class="btn-search-loc">
+                                    <i class="ph ph-magnifying-glass"></i> Search
+                                </button>
+                                <button type="button" id="currentLocationBtn" class="btn-current-loc">
+                                    <i class="ph ph-crosshair"></i> Use Current Location
+                                </button>
+                            </div>
+                            <div id="searchResults" class="search-results"></div>
+                        </div>
+                        
+                        <!-- Location Coordinates (Source) -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-map-pin"></i>
+                                Source Location Coordinates
+                            </label>
+                            <div class="input-row">
+                                <input type="number" step="any" name="latitude" id="latitude" class="cyber-input" placeholder="Latitude" required readonly>
+                                <input type="number" step="any" name="longitude" id="longitude" class="cyber-input" placeholder="Longitude" required readonly>
+                            </div>
+                            <div id="locationName" class="location-name-display"></div>
+                        </div>
+                        
+                        <!-- Destination Search -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-flag-checkered"></i>
+                                Destination
+                            </label>
+                            <div class="search-location-wrapper">
+                                <input type="text" id="destinationSearch" class="cyber-input" placeholder="Enter destination...">
+                                <button type="button" id="searchDestBtn" class="btn-search-loc">
+                                    <i class="ph ph-magnifying-glass"></i> Search
+                                </button>
+                            </div>
+                            <div id="destSearchResults" class="search-results"></div>
+                        </div>
+                        
+                        <!-- Destination Coordinates -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-flag-checkered"></i>
+                                Destination Coordinates
+                            </label>
+                            <div class="input-row">
+                                <input type="number" step="any" name="dest_latitude" id="destLatitude" class="cyber-input" placeholder="Destination Latitude" required readonly>
+                                <input type="number" step="any" name="dest_longitude" id="destLongitude" class="cyber-input" placeholder="Destination Longitude" required readonly>
+                            </div>
+                            <div id="destLocationName" class="location-name-display"></div>
+                        </div>
+                        
+                        <!-- Date & Time -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-calendar"></i>
+                                Date & Time
+                            </label>
+                            <input type="datetime-local" name="date" id="dateTime" class="cyber-input" required>
+                        </div>
+                        
+                        <!-- Weather Conditions (Auto-filled) -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-cloud-sun"></i>
+                                Weather Conditions
+                                <span class="auto-fill-badge">AUTO-FILLED</span>
+                            </label>
+                            <div class="weather-info-display" id="weatherDisplay">
+                                <div class="weather-loading">Select a location to fetch weather data...</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden weather inputs for form submission -->
+                        <input type="hidden" name="temp" id="temp" required>
+                        <input type="hidden" name="humi" id="humi" required>
+                        <input type="hidden" name="pres" id="pres" required>
+                        <input type="hidden" name="windspeed" id="windspeed" required>
+                        <input type="hidden" name="visibility" id="visibility" required>
+                        
+                        <!-- Road Features -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-road-horizon"></i>
+                                Road Features
+                            </label>
+                            <select name="roadfeature" class="cyber-select">
+                                <option value="0">No Special Features</option>
+                                <option value="Traffic_Signal">Traffic Signal</option>
+                                <option value="Junction">Junction</option>
+                                <option value="Crossing">Crossing</option>
+                                <option value="Station">Station</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Weather Keyword -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="ph ph-cloud"></i>
+                                Weather Condition
+                            </label>
+                            <select name="weatherkeyword" class="cyber-select">
+                                <option value="0">Clear</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="fog">Fog</option>
+                                <option value="overcast">Overcast</option>
+                                <option value="rain">Rain</option>
+                                <option value="snow">Snow</option>
+                                <option value="thunderstorm">Thunderstorm</option>
+                                <option value="wind">Windy</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-submit glow-effect">
+                            <i class="ph ph-shield-check"></i>
+                            Analyze Risk
+                            <span class="btn-glow"></span>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Risk Visualization -->
+                <div class="risk-visual">
+                    <div class="gauge-container glass-effect">
+                        <div class="gauge-header">
+                            <h3>Risk Assessment</h3>
+                            <span class="live-indicator pulse-glow">LIVE</span>
+                        </div>
+                        <div id="risk-gauge" class="gauge">
+                            <div class="gauge-circle">
+                                <svg viewBox="0 0 200 200">
+                                    <circle cx="100" cy="100" r="90" class="gauge-bg"></circle>
+                                    <circle cx="100" cy="100" r="90" class="gauge-fill" id="gaugeProgress"></circle>
+                                </svg>
+                                <div class="gauge-value">
+                                    <span id="riskScore">--</span>
+                                    <span class="gauge-label">Risk Score</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gauge-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot safe"></span>
+                                <span>Safe (0-30)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot moderate"></span>
+                                <span>Moderate (30-70)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot danger"></span>
+                                <span>High Risk (70-100)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Suggestions -->
+                    <div class="ai-suggestions glass-effect">
+                        <div class="suggestions-header">
+                            <i class="ph ph-lightbulb"></i>
+                            <h4>AI Safety Recommendations</h4>
+                        </div>
+                        <div id="suggestions-list" class="suggestions-list">
+                            <div class="suggestion-item">
+                                <i class="ph ph-check-circle"></i>
+                                <span>Enter route details to get personalized safety insights</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Section -->
+    <section id="api" class="api-section">
+        <div class="section-container">
+            <div class="api-content">
+                <div class="api-left">
+                    <span class="section-badge">FOR DEVELOPERS</span>
+                    <h2 class="section-title gradient-text">Integrate SafeRoute AI</h2>
+                    <p class="api-description">
+                        Access our powerful prediction API for your navigation apps, 
+                        government platforms, or smart city solutions.
+                    </p>
+                    <div class="api-features">
+                        <div class="api-feature-item">
+                            <i class="ph ph-check-circle"></i>
+                            <span>RESTful JSON API</span>
+                        </div>
+                        <div class="api-feature-item">
+                            <i class="ph ph-check-circle"></i>
+                            <span>Real-time predictions</span>
+                        </div>
+                        <div class="api-feature-item">
+                            <i class="ph ph-check-circle"></i>
+                            <span>Batch processing support</span>
+                        </div>
+                        <div class="api-feature-item">
+                            <i class="ph ph-check-circle"></i>
+                            <span>99.9% uptime SLA</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary glow-effect">
+                        <i class="ph ph-book-open"></i>
+                        View Documentation
+                    </button>
+                </div>
+                
+                <div class="api-right">
+                    <div class="code-block glass-effect">
+                        <div class="code-header">
+                            <span class="code-lang">Python</span>
+                            <button class="btn-copy" onclick="copyCode()">
+                                <i class="ph ph-copy"></i>
+                            </button>
+                        </div>
+                        <pre><code id="apiCode">import requests
+
+# API Endpoint
+url = "http://localhost:5000/api/predict"
+
+# Request Data
+data = {
+    "latitude": 27.872295,
+    "longitude": -82.745537,
+    "date": "2024-01-15T14:30",
+    "temp": 75.0,
+    "pres": 29.94,
+    "humi": 65.0,
+    "windspeed": 8.5,
+    "visibility": 10.0,
+    "roadfeature": "Junction",
+    "weatherkeyword": "cloudy"
+}
+
+# Make Request
+response = requests.post(url, json=data)
+result = response.json()
+
+print(f"Risk Level: {result['risk_level']}")
+print(f"Confidence: {result['confidence']}%")</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="cyber-footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <i class="ph ph-shield-checkered"></i>
+                        <span>SafeRoute <span class="ai-badge">AI</span></span>
+                    </div>
+                    <p class="footer-tagline">Making Roads Smarter</p>
+                    <div class="footer-socials">
+                        <a href="#" class="social-link"><i class="ph ph-twitter-logo"></i></a>
+                        <a href="#" class="social-link"><i class="ph ph-github-logo"></i></a>
+                        <a href="#" class="social-link"><i class="ph ph-linkedin-logo"></i></a>
+                        <a href="#" class="social-link"><i class="ph ph-discord-logo"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="{{ url_for('hotspot_map') }}">Hotspot Map</a>
+                        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                        <a href="#api">API</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="#">Documentation</a>
+                        <a href="#">API Reference</a>
+                        <a href="#">Blog</a>
+                        <a href="#">Case Studies</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="#">About Us</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Contact</a>
+                        <a href="#">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 SafeRoute AI. All rights reserved.</p>
+                <p class="footer-tech">
+                    <i class="ph ph-cpu"></i>
+                    Powered by XGBoost ML • Flask • Real-time Analytics
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='futuristic.js') }}"></script>
+    
+    <script>
+        // Location Search and Weather Integration
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBtn = document.getElementById('searchBtn');
+            const currentLocationBtn = document.getElementById('currentLocationBtn');
+            const searchDestBtn = document.getElementById('searchDestBtn');
+            const locationSearch = document.getElementById('locationSearch');
+            const destinationSearch = document.getElementById('destinationSearch');
+            const latInput = document.getElementById('latitude');
+            const lonInput = document.getElementById('longitude');
+            const destLatInput = document.getElementById('destLatitude');
+            const destLonInput = document.getElementById('destLongitude');
+            const locationNameDiv = document.getElementById('locationName');
+            const destLocationNameDiv = document.getElementById('destLocationName');
+            const weatherDisplay = document.getElementById('weatherDisplay');
+            const dateTimeInput = document.getElementById('dateTime');
+            
+            // Set current date/time
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            dateTimeInput.value = now.toISOString().slice(0,16);
+            
+            // Search Source Location
+            searchBtn.addEventListener('click', async function() {
+                const query = locationSearch.value.trim();
+                if (!query) {
+                    alert('Please enter a location to search');
+                    return;
+                }
+                
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = '<i class="ph ph-spinner"></i> Searching...';
+                
+                try {
+                    const response = await fetch(`/api/search-location?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        const loc = data.location;
+                        latInput.value = loc.lat.toFixed(6);
+                        lonInput.value = loc.lon.toFixed(6);
+                        locationNameDiv.innerHTML = `<i class="ph ph-check-circle"></i> ${loc.display_name}`;
+                        locationNameDiv.style.color = '#10B981';
+                        
+                        // Fetch weather for this location
+                        await fetchWeather(loc.lat, loc.lon);
+                    } else {
+                        alert('Location not found. Please try a different search.');
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                    alert('Error searching location. Please try again.');
+                } finally {
+                    searchBtn.disabled = false;
+                    searchBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Search';
+                }
+            });
+            
+            // Search Destination Location
+            searchDestBtn.addEventListener('click', async function() {
+                const query = destinationSearch.value.trim();
+                if (!query) {
+                    alert('Please enter a destination to search');
+                    return;
+                }
+                
+                searchDestBtn.disabled = true;
+                searchDestBtn.innerHTML = '<i class="ph ph-spinner"></i> Searching...';
+                
+                try {
+                    const response = await fetch(`/api/search-location?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        const loc = data.location;
+                        destLatInput.value = loc.lat.toFixed(6);
+                        destLonInput.value = loc.lon.toFixed(6);
+                        destLocationNameDiv.innerHTML = `<i class="ph ph-check-circle"></i> ${loc.display_name}`;
+                        destLocationNameDiv.style.color = '#10B981';
+                    } else {
+                        alert('Destination not found. Please try a different search.');
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                    alert('Error searching destination. Please try again.');
+                } finally {
+                    searchDestBtn.disabled = false;
+                    searchDestBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Search';
+                }
+            });
+            
+            // Use Current Location
+            currentLocationBtn.addEventListener('click', function() {
+                if (!navigator.geolocation) {
+                    alert('Geolocation is not supported by your browser');
+                    return;
+                }
+                
+                currentLocationBtn.disabled = true;
+                currentLocationBtn.innerHTML = '<i class="ph ph-spinner"></i> Getting location...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    async function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        latInput.value = lat.toFixed(6);
+                        lonInput.value = lon.toFixed(6);
+                        
+                        try {
+                            // Fetch location name and weather
+                            const response = await fetch('/api/get-current-location-weather', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ lat, lon })
+                            });
+                            
+                            const data = await response.json();
+                            
+                            if (data.status === 'success') {
+                                locationNameDiv.innerHTML = `<i class="ph ph-check-circle"></i> ${data.location.name}`;
+                                locationNameDiv.style.color = '#10B981';
+                                displayWeather(data.weather);
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                        } finally {
+                            currentLocationBtn.disabled = false;
+                            currentLocationBtn.innerHTML = '<i class="ph ph-crosshair"></i> Use Current Location';
+                        }
+                    },
+                    function(error) {
+                        alert('Unable to get your location: ' + error.message);
+                        currentLocationBtn.disabled = false;
+                        currentLocationBtn.innerHTML = '<i class="ph ph-crosshair"></i> Use Current Location';
+                    }
+                );
+            });
+            
+            // Fetch Weather Data
+            async function fetchWeather(lat, lon) {
+                weatherDisplay.innerHTML = '<div class="weather-loading"><i class="ph ph-spinner"></i> Fetching weather data...</div>';
+                
+                try {
+                    const response = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        displayWeather(data.weather);
+                    } else {
+                        weatherDisplay.innerHTML = '<div class="weather-error">Could not fetch weather data</div>';
+                    }
+                } catch (error) {
+                    console.error('Weather fetch error:', error);
+                    weatherDisplay.innerHTML = '<div class="weather-error">Error fetching weather data</div>';
+                }
+            }
+            
+            // Display Weather Data
+            function displayWeather(weather) {
+                // Set hidden form inputs
+                document.getElementById('temp').value = weather.temperature;
+                document.getElementById('humi').value = weather.humidity;
+                document.getElementById('pres').value = weather.pressure;
+                document.getElementById('windspeed').value = weather.wind_speed;
+                document.getElementById('visibility').value = weather.visibility;
+                
+                // Set weather keyword (select by value)
+                const weatherSelect = document.querySelector('select[name="weatherkeyword"]');
+                if (weatherSelect) {
+                    weatherSelect.value = weather.weather_keyword;
+                }
+                
+                // Display weather info
+                weatherDisplay.innerHTML = `
+                    <div class="weather-grid">
+                        <div class="weather-item">
+                            <i class="ph ph-thermometer"></i>
+                            <div>
+                                <div class="weather-label">Temperature</div>
+                                <div class="weather-value">${weather.temperature}°F</div>
+                            </div>
+                        </div>
+                        <div class="weather-item">
+                            <i class="ph ph-drop"></i>
+                            <div>
+                                <div class="weather-label">Humidity</div>
+                                <div class="weather-value">${weather.humidity}%</div>
+                            </div>
+                        </div>
+                        <div class="weather-item">
+                            <i class="ph ph-gauge"></i>
+                            <div>
+                                <div class="weather-label">Pressure</div>
+                                <div class="weather-value">${weather.pressure} inHg</div>
+                            </div>
+                        </div>
+                        <div class="weather-item">
+                            <i class="ph ph-wind"></i>
+                            <div>
+                                <div class="weather-label">Wind Speed</div>
+                                <div class="weather-value">${weather.wind_speed} mph</div>
+                            </div>
+                        </div>
+                        <div class="weather-item">
+                            <i class="ph ph-eye"></i>
+                            <div>
+                                <div class="weather-label">Visibility</div>
+                                <div class="weather-value">${weather.visibility} mi</div>
+                            </div>
+                        </div>
+                        <div class="weather-item">
+                            <i class="ph ph-cloud"></i>
+                            <div>
+                                <div class="weather-label">Condition</div>
+                                <div class="weather-value">${weather.weather_description}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    </script>
+    
+    <!-- Clerk Authentication Script -->
+    <script>
+        window.addEventListener('load', async function () {
+            if (window.Clerk) {
+                await Clerk.load();
+                
+                if (Clerk.user) {
+                    // User is signed in
+                    document.getElementById('clerk-signed-out').style.display = 'none';
+                    document.getElementById('clerk-signed-in').style.display = 'flex';
+                    
+                    // Mount user button
+                    Clerk.mountUserButton(document.getElementById('clerk-user-button'));
+                } else {
+                    // User is signed out
+                    document.getElementById('clerk-signed-out').style.display = 'flex';
+                    document.getElementById('clerk-signed-in').style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,44 +1,238 @@
 <!DOCTYPE html>
-
 <html lang="en" dir="ltr">
-	<head>
-		<meta charset="utf-8">
-		<title>Accident Predictor</title>
-		<link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-		<script src="https://kit.fontawesome.com/5f3f547070.js" crossorigin="anonymous"></script>
-		<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-	</head>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result - Road Accident Risk Predictor</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://kit.fontawesome.com/5f3f547070.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
 
-    <body>
+<body>
+    <!-- Website Title -->
+    <div class="container">
+        <h2 class='container-heading'>
+            <span class="heading_font">🚗 Road Accident Risk Predictor</span>
+        </h2>
+        <div class='description'>
+            <p>AI-powered road safety assessment result</p>
+        </div>
+    </div>
 
-        <!-- Website Title -->
-		<div class="container">
-            <h2 class='container-heading'><span class="heading_font">Accident Predictor</span></h2>
-            <div class='description'>
-    			<p>A Machine Learning Web App, Built with Flask.</p>
-    		</div>
-    	</div>
+    <!-- Prediction Result -->
+    <div class="results">
+        <div class="result-card">
+            {% if prediction == 1 %}
+                <!-- Unsafe Prediction -->
+                <div class="result-header unsafe">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h1>High Risk Detected</h1>
+                </div>
+                <div class="result-content">
+                    <div class="prediction-text">
+                        <span class='danger'>⚠️ Your current route is UNSAFE for driving</span>
+                        <p class="warning-message">Please exercise extreme caution or consider alternative routes.</p>
+                    </div>
+                    <div class="confidence-meter">
+                        <div class="confidence-label">Confidence Level: {{ confidence }}%</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill unsafe" style="width: {{ confidence }}%"></div>
+                        </div>
+                    </div>
+                    <div class="safety-tips">
+                        <h3><i class="fas fa-lightbulb"></i> Safety Recommendations:</h3>
+                        <ul>
+                            <li>Consider delaying your trip if possible</li>
+                            <li>Reduce speed and increase following distance</li>
+                            <li>Ensure all vehicle lights are working</li>
+                            <li>Check weather conditions before departure</li>
+                            <li>Inform someone of your travel plans</li>
+                        </ul>
+                    </div>
+                    <img class="result-image" src="{{ url_for('static', filename='diabetes.webp') }}" alt="High Risk Warning">
+                </div>
+            {% else %}
+                <!-- Safe Prediction -->
+                <div class="result-header safe">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>Route is Safe</h1>
+                </div>
+                <div class="result-content">
+                    <div class="prediction-text">
+                        <span class='safe'>✅ Your current route is SAFE for driving</span>
+                        <p class="success-message">You can proceed with confidence, but always drive responsibly.</p>
+                    </div>
+                    <div class="confidence-meter">
+                        <div class="confidence-label">Confidence Level: {{ confidence }}%</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill safe" style="width: {{ confidence }}%"></div>
+                        </div>
+                    </div>
+                    <div class="safety-tips">
+                        <h3><i class="fas fa-lightbulb"></i> General Safety Tips:</h3>
+                        <ul>
+                            <li>Always wear your seatbelt</li>
+                            <li>Follow speed limits and traffic rules</li>
+                            <li>Stay alert and avoid distractions</li>
+                            <li>Keep a safe following distance</li>
+                            <li>Regular vehicle maintenance is important</li>
+                        </ul>
+                    </div>
+                    <img class="result-image" src="{{ url_for('static', filename='no-diabetes.webp') }}" alt="Safe Route">
+                </div>
+            {% endif %}
+        </div>
 
-		<!-- Result -->
-		<div class="results">
-			{% if prediction==1 %}
-				<h1>Prediction: <span class='danger'>Your current position might be unsafe for driving, Stay Cautious.</span></h1>
-				<img class="gif" src="{{ url_for('static', filename='diabetes.webp') }}" alt="Diabetes Image">
-			{% elif prediction==0 %}
-				<h1>Prediction: <span class='safe'>Great! Your current route is safe.</span></h1>
-				<img class="gif1" src="{{ url_for('static', filename='no-diabetes.webp') }}" alt="Not Diabetes Image">
-			{% endif %}
-		</div>
+        <!-- Model Information -->
+        {% if not using_real_model %}
+        <div class="model-warning">
+            <h3><i class="fas fa-exclamation-triangle"></i> Model Information</h3>
+            <div class="warning-content">
+                <p><strong>⚠️ Using Fallback Model</strong></p>
+                <p>This prediction is based on a fallback model, not the real trained XGBoost model. The original model had compatibility issues.</p>
+                <p><strong>Model Type:</strong> {{ model_type }}</p>
+            </div>
+        </div>
+        {% else %}
+        <div class="model-success">
+            <h3><i class="fas fa-check-circle"></i> Model Information</h3>
+            <div class="success-content">
+                <p><strong>✅ Using Real XGBoost Model</strong></p>
+                <p>This prediction is based on the actual trained model using real accident data.</p>
+                <p><strong>Model Type:</strong> {{ model_type }}</p>
+            </div>
+        </div>
+        {% endif %}
 
-		<!-- Footer -->
-       <div class='footer'>
-           <div class="contact">
-               <a target="_blank" href="https://github.com/anujvyas/Diabetes-Prediction-Deployment"><i class="fab fa-github fa-lg contact-icon"></i></a>
-               <a target="_blank" href="https://www.linkedin.com/in/anujkvyas"><i class="fab fa-linkedin fa-lg contact-icon"></i></a>
-           </div>
-           <p class='footer-description'>Made with ❤️ by Vighnesh Sablok.</p>
-       </div>
+        <!-- Input Summary -->
+        <div class="input-summary">
+            <h3><i class="fas fa-info-circle"></i> Input Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <strong>Location:</strong>
+                    <span>{{ location_name }}</span>
+                    <br>
+                    <small style="color: #888;">{{ "%.4f"|format(input_data.latitude|float) }}, {{ "%.4f"|format(input_data.longitude|float) }}</small>
+                </div>
+                <div class="summary-item">
+                    <strong>Date & Time:</strong>
+                    <span>{{ input_data.date }}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Weather:</strong>
+                    <span>{{ input_data.weatherkeyword if input_data.weatherkeyword != '0' else 'Clear' }}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Temperature:</strong>
+                    <span>{{ input_data.temp }}°F</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Road Feature:</strong>
+                    <span>{{ input_data.roadfeature if input_data.roadfeature != '0' else 'None' }}</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Visibility:</strong>
+                    <span>{{ input_data.visibility }} miles</span>
+                </div>
+            </div>
+        </div>
 
-	</body>
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{{ url_for('home') }}" class="my-cta-button">
+                <i class="fas fa-arrow-left"></i>
+                New Prediction
+            </a>
+            <button onclick="window.print()" class="my-cta-button secondary">
+                <i class="fas fa-print"></i>
+                Print Result
+            </button>
+            <button onclick="shareResult()" class="my-cta-button secondary">
+                <i class="fas fa-share"></i>
+                Share Result
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class='footer'>
+        <div class="contact">
+            <a target="_blank" href="https://github.com" title="GitHub">
+                <i class="fab fa-github fa-lg contact-icon"></i>
+            </a>
+            <a target="_blank" href="https://www.linkedin.com" title="LinkedIn">
+                <i class="fab fa-linkedin fa-lg contact-icon"></i>
+            </a>
+        </div>
+        <p class='footer-description'>
+            Made with ❤️ for road safety | Powered by XGBoost ML Model
+        </p>
+    </div>
+
+    <!-- JavaScript for enhanced functionality -->
+    <script>
+        // Share result functionality
+        function shareResult() {
+            const prediction = {{ prediction }};
+            const confidence = {{ confidence }};
+            const riskLevel = prediction === 1 ? 'UNSAFE' : 'SAFE';
+            
+            const shareText = `Road Safety Prediction: ${riskLevel} (${confidence}% confidence) - Check your route safety at our prediction tool!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Road Safety Prediction Result',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Result copied to clipboard!');
+                }).catch(() => {
+                    // Final fallback: show in prompt
+                    prompt('Copy this text to share:', shareText);
+                });
+            }
+        }
+
+        // Add animation to confidence bar
+        document.addEventListener('DOMContentLoaded', function() {
+            const confidenceFill = document.querySelector('.confidence-fill');
+            if (confidenceFill) {
+                setTimeout(() => {
+                    confidenceFill.style.transition = 'width 1s ease-in-out';
+                }, 500);
+            }
+        });
+
+        // Print styles
+        window.addEventListener('beforeprint', function() {
+            document.body.classList.add('printing');
+        });
+
+        window.addEventListener('afterprint', function() {
+            document.body.classList.remove('printing');
+        });
+    </script>
+
+    <!-- Print-specific styles -->
+    <style>
+        @media print {
+            .action-buttons, .footer {
+                display: none;
+            }
+            .result-card {
+                box-shadow: none;
+                border: 2px solid #333;
+            }
+            body {
+                background: white;
+            }
+        }
+    </style>
+</body>
 </html>

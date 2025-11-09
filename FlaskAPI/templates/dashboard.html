@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SafeRoute AI</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='futuristic.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    
+    <!-- Clerk Authentication -->
+    <script
+      async
+      crossorigin="anonymous"
+      data-clerk-publishable-key="{{ clerk_publishable_key }}"
+      src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+      type="text/javascript"
+    ></script>
+</head>
+<body class="cyber-theme">
+    <!-- Animated Background -->
+    <div id="particles-js"></div>
+    <div class="city-grid"></div>
+    
+    <!-- Navigation -->
+    <nav class="cyber-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="ph ph-shield-checkered"></i>
+                <span class="brand-text">SafeRoute <span class="ai-badge">AI</span></span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('home_new') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('home_new') }}#features" class="nav-link">Features</a>
+                <a href="{{ url_for('hotspot_map') }}" class="nav-link">Hotspot Map</a>
+                <a href="{{ url_for('dashboard') }}" class="nav-link active">Dashboard</a>
+                <a href="{{ url_for('home_new') }}#api" class="nav-link">API</a>
+            </div>
+            <div class="nav-actions">
+                <!-- Clerk Auth Buttons -->
+                <div id="clerk-signed-out">
+                    <button class="btn-ghost" onclick="window.location.href='{{ url_for('signin') }}'">Sign In</button>
+                    <button class="btn-primary glow-effect" onclick="window.location.href='{{ url_for('signup') }}'">Get Started</button>
+                </div>
+                <div id="clerk-signed-in" style="display: none;">
+                    <div id="clerk-user-button"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-left">
+                <h1 class="dashboard-title gradient-text">City Safety Dashboard</h1>
+                <p class="dashboard-subtitle">Real-time analytics and safety insights</p>
+            </div>
+            <div class="header-right">
+                <div class="time-selector glass-effect">
+                    <button class="time-btn active" data-range="today">Today</button>
+                    <button class="time-btn" data-range="week">Week</button>
+                    <button class="time-btn" data-range="month">Month</button>
+                    <button class="time-btn" data-range="year">Year</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card-dash glass-effect hover-glow">
+                <div class="stat-icon purple-glow">
+                    <i class="ph ph-warning-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value gradient-text">3,847</div>
+                    <div class="stat-label">Total Incidents</div>
+                    <div class="stat-change positive">
+                        <i class="ph ph-arrow-down"></i>
+                        <span>12% decrease</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card-dash glass-effect hover-glow">
+                <div class="stat-icon cyan-glow">
+                    <i class="ph ph-map-pin-line"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value gradient-text">24</div>
+                    <div class="stat-label">Active Hotspots</div>
+                    <div class="stat-change neutral">
+                        <i class="ph ph-minus"></i>
+                        <span>No change</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card-dash glass-effect hover-glow">
+                <div class="stat-icon orange-glow">
+                    <i class="ph ph-clock-countdown"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value gradient-text">14m</div>
+                    <div class="stat-label">Avg Response Time</div>
+                    <div class="stat-change positive">
+                        <i class="ph ph-arrow-down"></i>
+                        <span>8% faster</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card-dash glass-effect hover-glow">
+                <div class="stat-icon green-glow">
+                    <i class="ph ph-shield-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value gradient-text">92%</div>
+                    <div class="stat-label">Prediction Accuracy</div>
+                    <div class="stat-change positive">
+                        <i class="ph ph-arrow-up"></i>
+                        <span>2% increase</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <!-- Traffic vs Incidents -->
+            <div class="chart-card glass-effect">
+                <div class="chart-header">
+                    <div>
+                        <h3 class="chart-title">Traffic vs Incident Frequency</h3>
+                        <p class="chart-subtitle">Correlation analysis</p>
+                    </div>
+                    <button class="btn-ghost-small">
+                        <i class="ph ph-download-simple"></i>
+                    </button>
+                </div>
+                <div class="chart-body">
+                    <canvas id="trafficIncidentChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Accident Trends -->
+            <div class="chart-card glass-effect">
+                <div class="chart-header">
+                    <div>
+                        <h3 class="chart-title">Daily/Weekly Accident Trends</h3>
+                        <p class="chart-subtitle">Time series analysis</p>
+                    </div>
+                    <button class="btn-ghost-small">
+                        <i class="ph ph-download-simple"></i>
+                    </button>
+                </div>
+                <div class="chart-body">
+                    <canvas id="accidentTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Weather Impact -->
+            <div class="chart-card glass-effect">
+                <div class="chart-header">
+                    <div>
+                        <h3 class="chart-title">Weather Condition Impact</h3>
+                        <p class="chart-subtitle">Distribution by weather type</p>
+                    </div>
+                    <button class="btn-ghost-small">
+                        <i class="ph ph-download-simple"></i>
+                    </button>
+                </div>
+                <div class="chart-body">
+                    <canvas id="weatherImpactChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Time of Day -->
+            <div class="chart-card glass-effect">
+                <div class="chart-header">
+                    <div>
+                        <h3 class="chart-title">Accidents by Time of Day</h3>
+                        <p class="chart-subtitle">Hourly distribution</p>
+                    </div>
+                    <button class="btn-ghost-small">
+                        <i class="ph ph-download-simple"></i>
+                    </button>
+                </div>
+                <div class="chart-body">
+                    <canvas id="timeOfDayChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Reports & Alerts -->
+        <div class="bottom-grid">
+            <!-- AI Safety Recommendations -->
+            <div class="report-card glass-effect">
+                <div class="report-header">
+                    <h3 class="report-title">
+                        <i class="ph ph-robot"></i>
+                        AI Safety Recommendations
+                    </h3>
+                    <span class="live-badge pulse-glow">LIVE</span>
+                </div>
+                <div class="report-body">
+                    <div class="recommendation-item">
+                        <div class="rec-icon high-priority">
+                            <i class="ph ph-warning"></i>
+                        </div>
+                        <div class="rec-content">
+                            <h4>High Priority: Junction X-234</h4>
+                            <p>Install additional traffic signals. 35% accident reduction predicted.</p>
+                            <div class="rec-meta">
+                                <span class="rec-tag">Infrastructure</span>
+                                <span class="rec-impact">High Impact</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-item">
+                        <div class="rec-icon medium-priority">
+                            <i class="ph ph-lightbulb"></i>
+                        </div>
+                        <div class="rec-content">
+                            <h4>Weather Alert: District 5</h4>
+                            <p>Heavy rain forecasted. Deploy additional patrols during peak hours.</p>
+                            <div class="rec-meta">
+                                <span class="rec-tag">Deployment</span>
+                                <span class="rec-impact">Medium Impact</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-item">
+                        <div class="rec-icon low-priority">
+                            <i class="ph ph-info"></i>
+                        </div>
+                        <div class="rec-content">
+                            <h4>Road Quality: Highway 101</h4>
+                            <p>Schedule maintenance for damaged road sections. Low accident correlation.</p>
+                            <div class="rec-meta">
+                                <span class="rec-tag">Maintenance</span>
+                                <span class="rec-impact">Low Impact</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts Management -->
+            <div class="alerts-card glass-effect">
+                <div class="alerts-header">
+                    <h3 class="report-title">
+                        <i class="ph ph-bell-ringing"></i>
+                        Active Alerts
+                    </h3>
+                    <button class="btn-ghost-small">View All</button>
+                </div>
+                <div class="alerts-body">
+                    <div class="alert-item alert-critical">
+                        <div class="alert-indicator"></div>
+                        <div class="alert-content">
+                            <div class="alert-title">Critical: Interstate 45</div>
+                            <div class="alert-time">2 minutes ago</div>
+                        </div>
+                        <button class="btn-alert-action">Respond</button>
+                    </div>
+
+                    <div class="alert-item alert-warning">
+                        <div class="alert-indicator"></div>
+                        <div class="alert-content">
+                            <div class="alert-title">Warning: Downtown Area</div>
+                            <div class="alert-time">15 minutes ago</div>
+                        </div>
+                        <button class="btn-alert-action">View</button>
+                    </div>
+
+                    <div class="alert-item alert-info">
+                        <div class="alert-indicator"></div>
+                        <div class="alert-content">
+                            <div class="alert-title">Info: Road Work Zone 8</div>
+                            <div class="alert-time">1 hour ago</div>
+                        </div>
+                        <button class="btn-alert-action">Dismiss</button>
+                    </div>
+
+                    <div class="alert-item alert-success">
+                        <div class="alert-indicator"></div>
+                        <div class="alert-content">
+                            <div class="alert-title">Resolved: Park Avenue</div>
+                            <div class="alert-time">3 hours ago</div>
+                        </div>
+                        <button class="btn-alert-action">Archive</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='futuristic.js') }}"></script>
+    
+    <script>
+        // Initialize Clerk authentication
+        window.addEventListener('load', async function () {
+            if (window.Clerk) {
+                try {
+                    await Clerk.load();
+                    
+                    const signedOut = document.getElementById('clerk-signed-out');
+                    const signedIn = document.getElementById('clerk-signed-in');
+                    
+                    if (Clerk.user) {
+                        // User is signed in - show user button
+                        console.log('User authenticated:', Clerk.user);
+                        signedOut.style.display = 'none';
+                        signedIn.style.display = 'block';
+                        Clerk.mountUserButton(document.getElementById('clerk-user-button'), {
+                            afterSignOutUrl: "{{ url_for('signin') }}"
+                        });
+                    } else {
+                        // User is not signed in
+                        console.log('User not authenticated');
+                        signedOut.style.display = 'flex';
+                        signedIn.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Clerk initialization error:', error);
+                }
+            } else {
+                console.error('Clerk SDK not loaded');
+            }
+        });
+    </script>
+</body>
+</html>

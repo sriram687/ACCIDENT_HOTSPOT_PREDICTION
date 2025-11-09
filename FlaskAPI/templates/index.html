@@ -1,66 +1,358 @@
 <!DOCTYPE html>
-
 <html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <title>Accident Predictor</title>
-        <link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-        <script src="https://kit.fontawesome.com/5f3f547070.js" crossorigin="anonymous"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-    </head>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Accident Risk Predictor</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='diabetes-favicon.ico') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://kit.fontawesome.com/5f3f547070.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
 
-    <body>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }}"></i>
+                        {{ message }}
+                        <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-        <!-- Website Title -->
-    	<div class="container">
-            <h2 class='container-heading'><span class="heading_font">Accident Predictor</span></h2>
-            <div class='description'>
-    			<p>A Machine Learning Web App, Built with Flask.</p>
-    		</div>
-    	</div>
+    <!-- Website Title -->
+    <div class="container">
+        <h2 class='container-heading'>
+            <span class="heading_font">🚗 Road Accident Risk Predictor</span>
+        </h2>
+        <div class='description'>
+            <p>AI-powered road safety assessment using machine learning</p>
+            <p class="sub-description">Enter your route details to get instant safety predictions</p>
+        </div>
+    </div>
 
-        <!-- Text Area -->
-    	<div class="ml-container">
-    		<form action="{{ url_for('predict') }}" method="POST">
-                <input class="form-input" type="text" name="latitude" placeholder="Latitude"><br>
-                <input class="form-input" type="text" name="longitude" placeholder="Longitude"><br>
-                <input class="form-input" type="datetime-local" name="date" placeholder="Date and Time"><br>
-                <select class="form-input" name="roadfeature">
-                    <option value=0>None</option>
-                    <option value="Traffic_Signal">Traffic Signal</option>
-                    <option value="Junction">Junction</option>
-                    <option value="Crossing">Crossing</option>
-                    <option value="Station">Station</option>
-                </select><br>
-                <select class="form-input" name="weatherkeyword">
-                    <option value=0>Clear</option>
-                    <option value="fog">Fog</option>
-                    <option value="overcast">Overcast</option>
-                    <option value="rain">Rain</option>
-                    <option value="snow">Snow</option>
-                    <option value="thunderstorm">Thunderstorm</option>
-                    <option value="wind">Windy</option>
-                    <option value="cloudy">Cloudy</option>
-                </select><br>
-                <input class="form-input" type="text" name="temp" placeholder="Temperature"><br>
-                <input class="form-input" type="text" name="pres" placeholder="Pressure"><br>
-                <input class="form-input" type="text" name="humi" placeholder="Humidity"><br>
-                <input class="form-input" type="text" name="windspeed" placeholder="Wind Speed"><br>
-                <input class="form-input" type="text" name="visibility" placeholder="Visibility"><br>
+    <!-- Main Form Container -->
+    <div class="ml-container">
+        <div class="form-wrapper">
+            <form id="predictionForm" action="{{ url_for('predict') }}" method="POST" novalidate>
+                
+                <!-- Location Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Location Information
+                    </h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="latitude">Latitude *</label>
+                            <input 
+                                class="form-input" 
+                                type="number" 
+                                id="latitude"
+                                name="latitude" 
+                                placeholder="e.g., 27.872295"
+                                step="any"
+                                min="-90"
+                                max="90"
+                                required
+                            >
+                            <small class="form-help">Enter latitude between -90 and 90</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="longitude">Longitude *</label>
+                            <input 
+                                class="form-input" 
+                                type="number" 
+                                id="longitude"
+                                name="longitude" 
+                                placeholder="e.g., -82.745537"
+                                step="any"
+                                min="-180"
+                                max="180"
+                                required
+                            >
+                            <small class="form-help">Enter longitude between -180 and 180</small>
+                        </div>
+                    </div>
+                </div>
 
-        		<input type="submit" class="my-cta-button" value="predict">
-        	</form>
-    	</div>
+                <!-- Time Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-clock"></i>
+                        Date & Time
+                    </h3>
+                    <div class="form-group">
+                        <label for="date">Date and Time *</label>
+                        <input 
+                            class="form-input" 
+                            type="datetime-local" 
+                            id="date"
+                            name="date" 
+                            required
+                        >
+                        <small class="form-help">Select when you plan to travel</small>
+                    </div>
+                </div>
 
-        <!-- Footer -->
-       <div class='footer'>
-           <div class="contact">
-               <a target="_blank" href="https://github.com/anujvyas/Diabetes-Prediction-Deployment"><i class="fab fa-github fa-lg contact-icon"></i></a>
-               <a target="_blank" href="https://www.linkedin.com/in/anujkvyas"><i class="fab fa-linkedin fa-lg contact-icon"></i></a>
-           </div>
-           <p class='footer-description'>Made with ❤️ by Vighnesh Sablok.</p>
-       </div>
+                <!-- Road Features Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-road"></i>
+                        Road Features
+                    </h3>
+                    <div class="form-group">
+                        <label for="roadfeature">Road Feature Type</label>
+                        <select class="form-input" id="roadfeature" name="roadfeature">
+                            <option value="0">None</option>
+                            <option value="Traffic_Signal">Traffic Signal</option>
+                            <option value="Junction">Junction</option>
+                            <option value="Crossing">Crossing</option>
+                            <option value="Station">Station</option>
+                        </select>
+                        <small class="form-help">Select the main road feature at your location</small>
+                    </div>
+                </div>
 
-    </body>
+                <!-- Weather Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cloud-sun"></i>
+                        Weather Conditions
+                    </h3>
+                    <div class="form-group">
+                        <label for="weatherkeyword">Weather Condition</label>
+                        <select class="form-input" id="weatherkeyword" name="weatherkeyword">
+                            <option value="0">Clear</option>
+                            <option value="cloudy">Cloudy</option>
+                            <option value="fog">Fog</option>
+                            <option value="overcast">Overcast</option>
+                            <option value="rain">Rain</option>
+                            <option value="snow">Snow</option>
+                            <option value="thunderstorm">Thunderstorm</option>
+                            <option value="wind">Windy</option>
+                        </select>
+                        <small class="form-help">Select current weather condition</small>
+                    </div>
+                </div>
+
+                <!-- Weather Parameters Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-thermometer-half"></i>
+                        Weather Parameters
+                    </h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="temp">Temperature (°F) *</label>
+                            <input 
+                                class="form-input" 
+                                type="number" 
+                                id="temp"
+                                name="temp" 
+                                placeholder="e.g., 75.0"
+                                step="0.1"
+                                min="-50"
+                                max="150"
+                                required
+                            >
+                            <small class="form-help">Temperature in Fahrenheit</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="pres">Pressure (in) *</label>
+                            <input 
+                                class="form-input" 
+                                type="number" 
+                                id="pres"
+                                name="pres" 
+                                placeholder="e.g., 29.94"
+                                step="0.01"
+                                min="25"
+                                max="35"
+                                required
+                            >
+                            <small class="form-help">Atmospheric pressure in inches</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="humi">Humidity (%) *</label>
+                            <input 
+                                class="form-input" 
+                                type="number" 
+                                id="humi"
+                                name="humi" 
+                                placeholder="e.g., 65.0"
+                                step="0.1"
+                                min="0"
+                                max="100"
+                                required
+                            >
+                            <small class="form-help">Relative humidity percentage</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="windspeed">Wind Speed (mph) *</label>
+                            <input 
+                                class="form-input" 
+                                type="number" 
+                                id="windspeed"
+                                name="windspeed" 
+                                placeholder="e.g., 8.5"
+                                step="0.1"
+                                min="0"
+                                max="200"
+                                required
+                            >
+                            <small class="form-help">Wind speed in miles per hour</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="visibility">Visibility (mi) *</label>
+                        <input 
+                            class="form-input" 
+                            type="number" 
+                            id="visibility"
+                            name="visibility" 
+                            placeholder="e.g., 10.0"
+                            step="0.1"
+                            min="0"
+                            max="20"
+                            required
+                        >
+                        <small class="form-help">Visibility in miles</small>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" class="my-cta-button" id="submitBtn">
+                        <i class="fas fa-shield-alt"></i>
+                        Predict Safety Risk
+                    </button>
+                    <button type="button" class="my-cta-button secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Reset Form
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class='footer'>
+        <div class="contact">
+            <a target="_blank" href="https://github.com" title="GitHub">
+                <i class="fab fa-github fa-lg contact-icon"></i>
+            </a>
+            <a target="_blank" href="https://www.linkedin.com" title="LinkedIn">
+                <i class="fab fa-linkedin fa-lg contact-icon"></i>
+            </a>
+        </div>
+        <p class='footer-description'>
+            Made with ❤️ for road safety | Powered by XGBoost ML Model
+        </p>
+    </div>
+
+    <!-- JavaScript for form validation and enhancement -->
+    <script>
+        // Form validation and enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('predictionForm');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Set current datetime as default
+            const now = new Date();
+            const datetimeLocal = now.toISOString().slice(0, 16);
+            document.getElementById('date').value = datetimeLocal;
+            
+            // Form submission with loading state
+            form.addEventListener('submit', function(e) {
+                if (form.checkValidity()) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+                    submitBtn.disabled = true;
+                }
+            });
+            
+            // Real-time validation
+            const inputs = form.querySelectorAll('input[required]');
+            inputs.forEach(input => {
+                input.addEventListener('blur', validateField);
+                input.addEventListener('input', clearFieldError);
+            });
+        });
+        
+        function validateField(e) {
+            const field = e.target;
+            const value = field.value;
+            let isValid = true;
+            let errorMessage = '';
+            
+            // Remove existing error styling
+            field.classList.remove('error');
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Validate based on field type
+            if (field.type === 'number') {
+                const numValue = parseFloat(value);
+                const min = parseFloat(field.min);
+                const max = parseFloat(field.max);
+                
+                if (isNaN(numValue)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid number';
+                } else if (numValue < min || numValue > max) {
+                    isValid = false;
+                    errorMessage = `Value must be between ${min} and ${max}`;
+                }
+            }
+            
+            if (!isValid) {
+                field.classList.add('error');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'field-error';
+                errorDiv.textContent = errorMessage;
+                field.parentNode.appendChild(errorDiv);
+            }
+        }
+        
+        function clearFieldError(e) {
+            const field = e.target;
+            field.classList.remove('error');
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
+        
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            // Clear any error styling
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+            document.querySelectorAll('.field-error').forEach(el => el.remove());
+            // Reset submit button
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-shield-alt"></i> Predict Safety Risk';
+            submitBtn.disabled = false;
+        }
+        
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(msg => {
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
 </html>
